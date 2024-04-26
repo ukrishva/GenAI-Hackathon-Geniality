@@ -55,9 +55,9 @@ python ad_generator.py
 ```
 
 ## Integration with our POS 
-Due to confidential materials in our spring boot backend and Android POS, we cannot provide the source code of our backend and Android POS. In this hackathon, we will try to simulate our backend by using the google cloud function and integrating it with our Android POS.
+Due to confidential materials in our spring boot backend and Android POS, we cannot provide the source code of our backend and Android POS. In this hackathon, we will try to simulate our backend by using the Google cloud function and integrating it with our Android POS.
 
-The general idea of POS integration is that the geniality ai will generate and store the advertisement data in the *geniality_advertisement* collection in firestore. Each advertisment document will be metadata of the advertiement images and audio. The advertisement metadata will be a combination of the following attributes.
+The general idea of POS integration is that the geniality ai will generate and store the advertisement data in the *geniality_advertisement* collection in firestore. Each advertisement document will be metadata of the advertisement images and audio. The advertisement metadata will be a combination of the following attributes.
 
 1. Weather (SUNNY, RAINY, CLOUDY)
 2. Region (NORTH, CENTER, NORTH_EAST)
@@ -65,13 +65,13 @@ The general idea of POS integration is that the geniality ai will generate and s
 4. age (YOUTH, ADULT, ELDER)
 5. job (WHITE_COLLAR, BLUE_COLLAR, OTHER)
 
-The *geniality_advertisement* will contain the above attributes, advertisment id and the storage path of google storage where the advertisment located.
+The *geniality_advertisement* will contain the above attributes, advertisement id ,and the storage path of Google storage where the advertiement located.
 
-The *storeagePath* attribute in *geniality_advertisement* collection will be the location of the folder containing image files and audio files of the advertisment.
+The *storeagePath* attribute in *geniality_advertisement* collection will be the location of the folder containing image files and audio files of the advertisement.
 
 In order to simulate store and member data, we also create *geniality_store* and *geniality_member* collections. Please note that we already have them currently in our production backend but we cannot provide the detail of our production database schema due to confidential reasons. The *geniality_store* is used to provide the __weather__ and __region__ of the store that the POS is using. The *geniality_member* is used to query member information such as __gender__, __age__ and __job__.
 
-When a customer provide and his or her __phoneNo__, we can find __gender__, __age__ and __job__ from *geniality_member* ,and we also know __weather__ and __region__ from *geniality_store* collection. We can use all of this to query an advertisement from *geniality_advertisement*.
+When a customer provides and his or her __phoneNo__, we can find __gender__, __age__ and __job__ from *geniality_member* ,and we also know __weather__ and __region__ from *geniality_store* collection. We can use all of this to query an advertisement from *geniality_advertisement*.
 
 ### Data model
 We create a very simple model containing 3 collections.
@@ -117,32 +117,32 @@ The files with extensions .mp3 will be considered advertisement audio.
 ![Geniality Cloud Storage](images/gcs.png "Geniality Cloud Storage")
 
 ### Cloud function Overview
-There are four functions that we will want to simulate our process. Note that in our product environment, we already have member and recommender api. Unfortunaly, we cannot provide the detail of them. In this Hackathon, we will mock up member and recommender api in *genialityGetMember* and *genialityRecommender* functions. The *genialityUpdateWeather* is used to update the weather of a store. The *genialityGetAdvertisement* accepts member id and basket items to get advertisment materials from cloud storage.
+There are four functions that we will want to simulate our process. Note that in our product environment, we already have member and recommender API. Unfortunately, we cannot provide the details of them. In this Hackathon, we will mock up member and recommender API in *genialityGetMember* and *genialityRecommender* functions. The *genialityUpdateWeather* is used to update the weather of a store. The *genialityGetAdvertisement* accepts member id and basket items to get advertisement materials from cloud storage.
 
 1. *genialityUpdateWeather* 
-   this function is used to change weather of the store. The weather will change periodically. For instance, if we want to update weather every hour, we could have batch job to read weather from a weather provider and update to *geniality_store*. In this case, this function will be called periodically. We decide to cache the weather on our database rather than querying every time from the weather provider. This decision helps us save costs and also allows more flexible implementation.
+   this function is used to change the weather of the store. The weather will change periodically. For instance, if we want to update the weather every hour, we could have a batch job to read the weather from a weather provider and update to *geniality_store*. In this case, this function will be called periodically. We decide to cache the weather on our database rather than querying every time from the weather provider. This decision helps us save costs and also allows more flexible implementation.
 
 2. *genialityGetMember*
-   this function is used to get member infomation. A customer provide a phone number and this function will query from *geniality_member*.
+   this function is used to get member infomation. A customer provides a phone number and this function will query from *geniality_member*.
 
 3. *genialityRecommender*
    this function is used to get a recommended item according to basket items. For this hackathon, this function is only provide random item.
 
 4. *genialityGetAdvertisement*
-   this function is used to get advertisment file accoriding to member id and basket items. This function accepts member id and basket items to get advertisment materials from cloud storage. This is done by querying *geniality_member* and *geniality_store*, and then using basket items to get recommend item. Finally, we query from *geniality_advertisement*. We now get path to our cloud storage and list all file in that path. The files that is image(.jpg or .png) will the advertisement images and the mp3 file will audio file. The description attribute in *geniality_advertisement* will be description of the function response. 
+   this function is used to get advertisement file according to member id and basket items. This function accepts member id and basket items to get advertisement materials from cloud storage. This is done by querying *geniality_member* and *geniality_store*, and then using basket items to get the recommended item. Finally, we query from *geniality_advertisement*. We now get the path to our cloud storage and list all files in that path. The files that are images (.jpg or .png) will be the advertisement images and the mp3 file will audio file. The description attribute in *geniality_advertisement* will be a description of the function response. 
 
-   This is example of *genialityGetAdvertisement* response. The items in images array and audio will be donwloadable link, which are very easy to download from any http client.
+   This is an example of *genialityGetAdvertisement* response. The items in the images array and audio will be a downloadable link, which is very easy to download from any HTTP client.
 ```
-   {
-    "advertisement": {
-        "images": [
-            "https://firebasestorage.googleapis.com/v0/b/geniality.appspot.com/o/advertisement%...",
-            "https://firebasestorage.googleapis.com/v0/b/geniality.appspot.com/o/advertisement%...",
-            "https://firebasestorage.googleapis.com/v0/b/geniality.appspot.com/o/advertisement%..."
-        ],
-        "description": "เมื่อฟ้าร้องไห้ มาทำให้ต่อมรับรสของคุณยิ้มได้ด้วยลิปตันแบล็คทีเลมอน รสชาติสดชื่น เหมือนยกแสงแดดมาไว้ในขวด",
-        "audio": "https://firebasestorage.googleapis.com/v0/b/geniality.appspot.com/o/advertisement%..."
-    }
+{
+   "advertisement": {
+      "images": [
+         "https://firebasestorage.googleapis.com/v0/b/geniality.appspot.com/o/advertisement%...",
+         "https://firebasestorage.googleapis.com/v0/b/geniality.appspot.com/o/advertisement%...",
+         "https://firebasestorage.googleapis.com/v0/b/geniality.appspot.com/o/advertisement%..."
+      ],
+      "description": "เมื่อฟ้าร้องไห้ มาทำให้ต่อมรับรสของคุณยิ้มได้ด้วยลิปตันแบล็คทีเลมอน รสชาติสดชื่น เหมือนยกแสงแดดมาไว้ในขวด",
+      "audio": "https://firebasestorage.googleapis.com/v0/b/geniality.appspot.com/o/advertisement%..."
+   }
 }
 ```
 
@@ -159,6 +159,7 @@ Unfortunately, we cannot provide the source code of our Android POS. We will dis
 1. Find member. It is very simple. A store cashier asks customer's mobile phone. The POS calls *genialityGetMember* to get member information including memberId. 
 
 2. The POS will get an advertisement using *genialityGetAdvertisement* by providing storeCode, memberId, and basket information. The genialityGetAdvertisement cloud function will return the advertisement description, a downloadable link to a list of advertisement images, and a downloadable link to an advertisement audio (if exists)
+
    2.1 Add item to basket.
    ![POS Basket](images/basket.png "POS Basket")
    
